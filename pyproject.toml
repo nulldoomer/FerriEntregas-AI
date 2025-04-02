@@ -9,5 +9,6 @@ dependencies = [
     "keras-ocr>=0.9.3",
     "numpy>=2.2.4",
     "opencv-python>=4.11.0.86",
+    "pytesseract>=0.3.13",
     "uvicorn>=0.34.0",
 ]

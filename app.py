@@ -1,4 +1,40 @@
 # #############################################################################
+# ############################## PYTESSERACT ##################################
+# #############################################################################
+# from fastapi import FastAPI, File, UploadFile
+# import cv2
+# import pytesseract
+# import numpy as np
+# import os
+#
+# tesseract_path = os.path.join(
+#     os.path.dirname(__file__), ".venv", "Tesseract", "tesseract.exe"
+# )
+#
+# pytesseract.pytesseract.tesseract_cmd = tesseract_path
+#
+# app = FastAPI()
+#
+#
+# @app.post("/extract_text")
+# async def extract_text(file: UploadFile = File(...)):
+#     contents = await file.read()
+#     np_array = np.frombuffer(contents, np.uint8)
+#     image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+#
+#     gray_scale = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+#
+#     thresh = cv2.adaptiveThreshold(
+#         gray_scale, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 2
+#     )
+#
+#     custom_config = r"--oem 3 --psm 6 -l spa"
+#     text = pytesseract.image_to_string(thresh, config=custom_config)
+#
+#     return {"text": text}
+#
+
+# #############################################################################
 # ######################### EASYOCR ###########################################
 # #############################################################################
 from fastapi import FastAPI, File, UploadFile
@@ -8,14 +44,12 @@ import easyocr
 
 app = FastAPI()
 
-# Inicializar el lector de EasyOCR con GPU habilitada
-reader = easyocr.Reader(["es"], gpu=True)  # Agrega más idiomas si es necesario
+reader = easyocr.Reader(["es"], gpu=True)
 
 
 @app.post("/extract_text")
 async def extract_text(file: UploadFile = File(...)):
     try:
-        # Leer la imagen del archivo
         contents = await file.read()
         np_array = np.frombuffer(contents, np.uint8)
         image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
@@ -23,13 +57,10 @@ async def extract_text(file: UploadFile = File(...)):
         if image is None:
             return {"error": "No se pudo decodificar la imagen"}
 
-        # Convertir a escala de grises (opcional, mejora la precisión en algunos casos)
         image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-        # Ejecutar OCR con EasyOCR
         results = reader.readtext(image_gray)
 
-        # Extraer el texto detectado
         extracted_text = " ".join([text for _, text, _ in results])
 
         return {"text": extracted_text}
