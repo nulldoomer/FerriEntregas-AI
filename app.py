@@ -1,4 +1,55 @@
 # #############################################################################
+# ######################### EASYOCR ###########################################
+# #############################################################################
+#
+from fastapi import FastAPI, File, UploadFile
+import cv2
+import numpy as np
+import easyocr
+import re
+
+app = FastAPI()
+
+reader = easyocr.Reader(["es"], gpu=True)
+
+
+@app.post("/extract_text")
+async def extract_text(file: UploadFile = File(...)):
+    try:
+        contents = await file.read()
+        np_array = np.frombuffer(contents, np.uint8)
+        image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+
+        if image is None:
+            return {"error": "No se pudo decodificar la imagen"}
+
+        image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+        results = reader.readtext(image_gray)
+
+        extracted_text = " ".join([text for _, text, _ in results])
+
+        ci_pattern = r"CEDIRUC[:\s]*(\d{10})"
+        found_ci = re.search(ci_pattern, extracted_text, re.IGNORECASE)
+
+        vtotal_pattern = r"VALOR TOTAL USD[:\s]*(\d+\.\d+)"
+        found_vtotal = re.search(vtotal_pattern, extracted_text, re.IGNORECASE)
+
+        nfactura_pattern = r"FACTURA Nro[:\s]*(\d+\-\d+\-\d+)"
+        found_nfactura = re.search(nfactura_pattern, extracted_text, re.IGNORECASE)
+
+        return {
+            "text": extracted_text,
+            "CI": found_ci.group(1) if found_ci else None,
+            "valor_total": found_vtotal.group(1) if found_vtotal else None,
+            "numero_factura": found_nfactura.group(1) if found_nfactura else None,
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
+
+
+# #############################################################################
 # ############################## PYTESSERACT ##################################
 # #############################################################################
 # from fastapi import FastAPI, File, UploadFile
@@ -33,41 +84,6 @@
 #
 #     return {"text": text}
 #
-
-# #############################################################################
-# ######################### EASYOCR ###########################################
-# #############################################################################
-#
-from fastapi import FastAPI, File, UploadFile
-import cv2
-import numpy as np
-import easyocr
-
-app = FastAPI()
-
-reader = easyocr.Reader(["es"], gpu=True)
-
-
-@app.post("/extract_text")
-async def extract_text(file: UploadFile = File(...)):
-    try:
-        contents = await file.read()
-        np_array = np.frombuffer(contents, np.uint8)
-        image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-
-        if image is None:
-            return {"error": "No se pudo decodificar la imagen"}
-
-        image_gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-        results = reader.readtext(image_gray)
-
-        extracted_text = " ".join([text for _, text, _ in results])
-
-        return {"text": extracted_text}
-
-    except Exception as e:
-        return {"error": str(e)}
 
 
 # #############################################################################
