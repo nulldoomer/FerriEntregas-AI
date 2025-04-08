@@ -30,4 +30,4 @@ RUN uv pip install --system --no-cache-dir .
 EXPOSE 8000
 
 # Comando para ejecutar tu app
-cmd ["uvicorn", "app:app", "--host", "127.0.0.1", "--port", "8000"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
