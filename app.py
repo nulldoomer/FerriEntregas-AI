@@ -35,7 +35,7 @@ async def extract_text(file: UploadFile = File(...)):
         vtotal_pattern = r"VALOR TOTAL USD[:\s]*(\d+\.\d+)"
         found_vtotal = re.search(vtotal_pattern, extracted_text, re.IGNORECASE)
 
-        nfactura_pattern = r"FACTURA Nro[:\s]*(\d+\-\d+\-\d+)"
+        nfactura_pattern = r"FACTURA Nr.[:\s]*(\d+\-\d+\-\d+)"
         found_nfactura = re.search(nfactura_pattern, extracted_text, re.IGNORECASE)
 
         return {
