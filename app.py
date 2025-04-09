@@ -1,14 +1,28 @@
 # #############################################################################
 # ######################### EASYOCR ###########################################
 # #############################################################################
-#
 from fastapi import FastAPI, File, UploadFile
+from fastapi.middleware.cors import CORSMiddleware
 import cv2
 import numpy as np
 import easyocr
 import re
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:8100",
+    "capacitor://localhost",
+    "ionic://localhost",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # o ["*"] para permitir todos
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 reader = easyocr.Reader(["es"], gpu=True)
 
